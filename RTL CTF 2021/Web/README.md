@@ -1,4 +1,5 @@
 # Basic
+<img src="Images/challenge.png" width="500" >
 
 This was the only web challenge. If we check the site we see a normal login form:
 
