@@ -8,6 +8,7 @@ So I tried sql payloads and after a few tries I got the flag with the payload in
 ```
 admin`--
 ```
+<img src="Images/Flag.png" width="500" >
 
 The flag:
 RTL{b@s1c_5ql}
