@@ -29,6 +29,6 @@ pypykatz lsa minidump lsass1.DMP
 ```
 <img src="Images/flag.png" width="500" >
 
-and we got a flag!
+and we got the flag!
 
 Flag: RTL{WD1G3ST_1S_B4D}
