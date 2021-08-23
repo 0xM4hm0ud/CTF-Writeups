@@ -1,10 +1,10 @@
-# Bad Developers
+# Chainblock
 
-<img src="Images/challenge.png" width="500" >
+<img src="Images/challenge.png" width="700" >
 
 After downloading the tar file, we untar it and we get some files:
 
-<img src="Images/files.png" width="500" >
+<img src="Images/files.png" width="700" >
 
 
 The script is:
@@ -108,11 +108,18 @@ So we can't execute something on the stack. So what we need to do is ret2libc(re
 First of all we need to find the offset of the buffer overflow:
 I will do this in gdb:
 
-<img src="Images/pattern.png" width="500" >
+<img src="Images/pattern.png" width="800" >
 
 Run the program an enter you pattern:
 
-<img src="Images/segfault.png" width="500" >
+<img src="Images/segfault.png" width="800" >
 
-we get an segmentation fault at 0x40124a
+we get an segmentation fault.
+
+Now we check the offset:
+
+<img src="Images/offset.png" width="800" >
+
+We found the offset at 260.
+
 
