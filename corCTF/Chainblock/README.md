@@ -82,7 +82,7 @@ First of all we check what for file it is:
 
 We can see its an 64 bit executable. 
 
-Secondly we see that we have an buffer overlow because of gets(). 
+Secondly we see that we have an buffer overflow because of gets(). 
 It takes 255 chars in the buffer and gets() keeps on reading until it sees a newline charachter, so if we put more than the buffer, we will overflow it:
 
 ```c
