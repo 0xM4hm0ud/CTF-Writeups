@@ -136,7 +136,7 @@ To find the address, we can do:
 
 <img src="Images/ldd.png" width="800" >
 
-But as we can see here ASLR is enabled, so the address changing every time:
+But as we can see here ASLR is enabled locally on my machine, so the address changing every time(we always assume ASLR is enabled on the remote):
 
 <img src="Images/ldd1.png" width="800" >
 
@@ -215,7 +215,7 @@ puts = u64((leaked_output + b"\x00\x00")[:8])
 libc_addresss = puts - libc.symbols['puts']
 print("libc_addresss: ", hex(libc_addresss))
 ```
-We add 2 bytes because unpack requires 8 bytes. We set a limit of 8 with [:8].
+We add 2 bytes because unpack requires 8 bytes.
 
 So now we have the base address, we can exploit it to get a shell.
 
