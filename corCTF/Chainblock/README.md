@@ -75,12 +75,15 @@ int main() {
 	verify();
 }
 ```
-We have a libc file and the binary, so what I thought is ret2libc. We can check it.
 
-First of all we can see its and 64 bit executable.
+First of all we check what for file it is:
+
+<img src="Images/file.png" width="500" >
+
+We can see its an 64 bit executable. 
 
 Secondly we see that we have an buffer overlow because of gets(). 
-It takes 255 chars in the buffer and gets() keeps on reading until it sees a newline charachter, so if we put more than the buffer, we will overflowe it:
+It takes 255 chars in the buffer and gets() keeps on reading until it sees a newline charachter, so if we put more than the buffer, we will overflow it:
 
 ```c
 	char buf[255];
@@ -101,25 +104,23 @@ It have NX enabled: NX is:
 ```
 Nx is short-hand for Non-Executable stack. What this means is that the stack region of memory is not executable. So if there is perfectly valid code there, you can't execute it due to it's permissions.
 ```
-So we can't execute something on the stack. So what we need to do is ret2libc(return to libc) and execute a function from there.
+So we can't execute something on the stack. So what we need to do is ret2libc(return to libc) and execute a function from there. 
 
 ## Exploit
 
 First of all we need to find the offset of the buffer overflow:
 I will do this in gdb:
 
+Create the pattern:
 <img src="Images/pattern.png" width="800" >
 
-Run the program an enter you pattern:
-
+Run the program and enter you pattern:
 <img src="Images/segfault.png" width="800" >
 
-we get an segmentation fault.
+We get an segmentation fault as you can see.
 
-Now we check the offset:
-
+Now we can check the offset:
 <img src="Images/offset.png" width="800" >
 
-We found the offset at 260.
-
+We found the offset at 264.
 
