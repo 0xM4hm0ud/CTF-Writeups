@@ -10,3 +10,5 @@ base = base64.b64decode(ct)
 decipher = AES.new(key, AES.MODE_ECB)
 pt = decipher.decrypt(base)
 print(pt)
+
+#TamilCTF{bL0ckS_ar3_Br34kabL3!!}
