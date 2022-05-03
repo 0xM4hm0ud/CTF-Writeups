@@ -73,7 +73,7 @@ io.interactive()
 ```
 ![img](images/local.jpg)
 
-And we get our shell locally, but when running remotely it didnt work, because the libc are different. So lets leak values on remote to find the correct libc. 
+And we get our shell locally, but when running remotely it didnt work, because the libc is different. So lets leak values from remote to find the correct libc. 
 So I am going to leak `puts` and `gets` address to be more accurate:
 
 ```py
@@ -131,7 +131,7 @@ payload += p64(elf.got['gets'])
 payload += p64(elf.plt['puts']) 
 ```
 
-So with those 2 leaks we got find this libc on https://libc.rip/:
+So with those 2 leaks we find this libc on https://libc.rip/:
 
 ![img](images/libc.jpg)
 
@@ -190,6 +190,6 @@ io.clean()
 io.interactive()
 ```
 
-And we got a shell:
+And we got a shell and the flag:
 
 ![img](images/flag.jpg)
