@@ -25,7 +25,8 @@ We first need to find our offset:
 
 ![img](images/offset.jpg)
 
-
+We find our offset at the 6th position
+Our exploit script:
 ```py
 from pwn import *
 
