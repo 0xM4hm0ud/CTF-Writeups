@@ -103,7 +103,7 @@ Continue after the first breakpoint an check the stack:
 ![img](images/gdb3.jpg)
 
 So we succesfully wrote the `date_path` address to that location, so now with our second write we can use positional arguments.
-So what we want to write now is `/bin/sh` to `date_path`. But in `date_path` there is already `usr/bin/` so we can just overwrite `date` with `/sh`(`/usr/bin//sh` doesnt matter and will run as normally, try locally). Lets check the address we want to overwrite.
+So what we want to write now is `/bin/sh` to `date_path`. But in `date_path` there is already `/usr/bin/` so we can just overwrite `date` with `/sh`(`/usr/bin//sh` doesnt matter and will run as normally, try locally in your terminal). Lets check the address we want to overwrite.
 We can set values in gdb:
 
 ![img](images/gdb4.jpg)
