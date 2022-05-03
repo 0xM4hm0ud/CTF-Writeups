@@ -133,7 +133,7 @@ So changed `30` to `2634406` and run again:
 ![img](images/gdb6.jpg)
 
 And we can see we succesfully wrote what we want.
-If we run it outside of gdb, we can see it wont work and differs slighly:
+If we run it outside of gdb, we can see it wont work and differs slightly:
 
 ![img](images/error.jpg)
 
