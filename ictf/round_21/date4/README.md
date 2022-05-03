@@ -180,7 +180,7 @@ It will open an extra tab with gdb. Lets continue 2 times till we hit the second
 
 We can see here, its not the address we want. Its `0xa` at the end and we want `0x9` so 1 number too much. So we substract 1 from `4210802` in our script, and run it again:
 
-![img](images/gdb7.jpg)
+![img](images/gdb8.jpg)
 
 We can see everything is correct now, so lets continue:
 
