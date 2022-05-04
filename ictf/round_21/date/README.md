@@ -18,12 +18,13 @@ So all protections are enabled and its an 64 bit binary. Lets decompile it in gh
 
 ![img](images/ghidra.jpg)
 
-We can see there are values stored on the stack in variables and our input starts at `local_d8` pointing to a variable. We can input 0x80 charachters into fgets. We can also see that system is called with the address at `local_98`. Thats pointing to `/usr/bin/date`. So we can overflow it and change it to `/bin/bash`, We cant overflow till the return pointer because of the canary. 
+We can see there are values stored on the stack in variables and our input starts at `local_d8` pointing to a variable. We can input 0x80 charachters into fgets. We can also see that system is called with the address at `local_98`. Thats pointing to `/usr/bin/date`. So we can overflow it and change it to `/bin/sh`. 
 
 So lets open it in gdb, we set a breakpoint at system and create a pattern of 0x80 chars:
 
 ![img](images/gdb.jpg)
 
+Run the program and send the pattern.
 It stops at our breakpoint and we can see we overflowed the value thats put into rdi for the system call:
 
 ![img](images/gdb1.jpg)
