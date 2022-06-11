@@ -25,7 +25,7 @@ We get the source code of the page itself:
 ?> 
 ```
 
-So what it basically does is, it checks if the parameter `f` is set. If its set it calls the [DirectoryIterator]([https://www.php.net/manual/en/class.directoryiterator.php](https://www.php.net/manual/en/directoryiterator.getsize.php)) with getSize:
+So what it basically does is, it checks if the parameter `f` is set. If its set it calls the [DirectoryIterator](https://www.php.net/manual/en/class.directoryiterator.php) with getSize:
 
 ```
 Get size of current DirectoryIterator item 
