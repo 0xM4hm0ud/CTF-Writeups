@@ -82,7 +82,7 @@ We can see that we can provide a seed two times. The first one is stored in a gl
 In the experience function, a read-write-execute (RWX) memory section is created, and 160 NOPs are inserted. Then, the origin value is placed at the start of the section. The origin value corresponds to the last seed we provide.
 Subsequently, the function runs 84 times, calling custom_random() each time. This function performs some encryption based on our STATE. After this, the function sleepy() executes our shellcode.
 
-Initially, I considered brute-forcing all possibilities to obtain a valid shellcode at the end the correct way, but that would be overkill.
+Initially, I considered brute-forcing all possibilities to obtain a valid shellcode at the end the correct way, but that would be infeasible.
 
 ### How can we call the win function?
 When the shellcode is called with `call rax`, the return address is pushed onto the stack. Since the return address is in the binary section, it is close to the win function.
@@ -99,7 +99,7 @@ Thus, we can calculate the offset between the return address and the win functio
 
 ![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/7d5569fd-bdbd-4d68-86c2-4eb962cd1d1f)
 
-The offset is 3. Therefore, we can add 3 to rsp and then return. We need to increase rsp by 3 in the origin. This is because the other one gets encrypted.
+The offset is 3. Therefore, we can add 3 to the pointer at rsp(top of the stack, our return address) and then return. We need to put this payload in the origin. This is because the other one gets encrypted.
 We only have 4 bytes to do this, because it casts `*((int*)ccol) = origin;`.
 
 We can use the [shell-storm](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=add+byte+ptr+%5Brsp%5D%2C+3&arch=x86-64&as_format=hex#assembly) assembler:
@@ -121,7 +121,7 @@ If we step through to skip the NOPs, we can see our ret:
 
 ![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/d1ea21aa-9222-4c30-9c5c-fe9a5b553390)
 
-So now we can call the win function and get the flag:
+So now it will return to the win function and get the flag:
 
 ![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/5955a1f1-c367-4f36-981d-174acd598437)
 
