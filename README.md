@@ -1,2 +1,2 @@
 # CTF-Writeups
-This are my personal Writeups/scripts for different CTF's
+These are my personal writeups and scripts for various CTFs
