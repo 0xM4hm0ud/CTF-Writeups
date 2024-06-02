@@ -85,7 +85,7 @@ Subsequently, the function runs 84 times, calling custom_random() each time. Thi
 Initially, I considered brute-forcing all possibilities to obtain a valid shellcode at the end the correct way, but that would be overkill.
 
 ### How can we call the win function?
-When the shellcode is called with call rax, the return address is pushed onto the stack. Since the return address is in the binary section, it is close to the win function.
+When the shellcode is called with `call rax`, the return address is pushed onto the stack. Since the return address is in the binary section, it is close to the win function.
 
 Here is the stack before calling our shellcode:
 
