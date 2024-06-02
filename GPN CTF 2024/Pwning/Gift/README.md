@@ -58,7 +58,7 @@ The challenge is made in assembly. It does 3 main things:
 
 When reading our input, it gives 16 bytes extra as a gift. We can see that it subtracts 314 from rsp. We can send 330 bytes. This means that we have an overflow. We can hit the rip with 314 bytes.
 
-So the size of rip is 8 bytes. Thus, we can send 314 + 8(this will be put in rip) = 322 bytes to control rip. The read syscall returns the amount it reads in rax. 
+The size of rip is 8 bytes. Thus, we can send 314 + 8(this will be placed in rip) = 322 bytes to control rip. The read syscall returns the amount it reads in rax. 
 If we check what the syscall of 322/0x142 is, we see that it's `execveat`. With this, we can execute commands. At the ret of `read_input`, rsi still contains the address of our input. 
 So we can put `/bin/sh` at the start of our buffer.
 
