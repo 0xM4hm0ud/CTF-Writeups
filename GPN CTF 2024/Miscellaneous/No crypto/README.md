@@ -10,6 +10,8 @@
 
 ![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/547f3042-d9e2-4082-8786-aca68cd496e2)
 
+> If you don't like Github, read the writeup [here](https://learn-cyber.net/writeup/No-crypto)
+
 # Solution
 
 When we unzip the file, we can see a few files. Let's check the source of the binary called cli:
