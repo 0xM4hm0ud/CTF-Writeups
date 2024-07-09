@@ -672,6 +672,7 @@ There is a technique called [`tcache poisoning`](https://github.com/shellphish/h
 This technique allows us to allocate a chunk at an arbitrary location. With this, we can use the edit functionality to change anything we want, essentially creating a write-what-where primitive.
 
 The Global Offset Table (GOT) is full RELRO, so we can't overwrite that. However, the GOT of the libc is partial RELRO. We can try to overwrite that. In the libc 2.31 version, the `__malloc_hook` and `__free_hook` are not removed. These hooks will be called when `malloc` or `free` is invoked. Therefore, if we overwrite one of these hooks, it will redirect execution flow when `malloc` or `free` is called.
+I overwrote the hooks instead of libc GOT.
 
 Let's start exploiting. First, I will create a few helpful functions:
 
