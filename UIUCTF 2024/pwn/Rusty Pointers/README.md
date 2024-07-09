@@ -644,15 +644,15 @@ When viewing this method in gdb, we can compare this to the function `get_note`.
 
 `get_note`:
 
-![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/ef83b32a-85cc-4be6-b5f5-369e1b9e7e21)
+![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/af7f79c8-d12f-44d5-8aca-a21e9bb70456)
 
-We can see that it will call `malloc` to create the `Box`.
+We can see that it will call `malloc` to create the `Box`. Upon returning, it moves the value from stack to rax.(Yellow boxes). 
 
 `get_rule`:
 
 ![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/a58146f9-7367-4844-9196-917e7e853543)
 
-Here, it allocates memory (green box) for the box. Before returning, it will call `free` on the box (blue box).
+Here, it also allocates memory (green box) for the box. Before returning, it will call `free` on the box (blue box).
 When `get_ptr` is called, it will save the return value at the top of the stack. Upon returning, it moves the value from the stack into the `rax` register (yellow boxes).
 
 So, while freeing a `Box` and still having a reference to it, we encounter a Use-After-Free (UAF) vulnerability.
@@ -723,15 +723,15 @@ log.success("System address: %#x", system)
 Now we can perform tcache poisoning to place a chunk at the `__free_hook`. To achieve this, we need to modify the `fd` pointer of a freed tcache chunk. 
 First, I will create 2 note chunks and free them. We can observe both chunks in the tcache bin:
 
-![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/36e869aa-f50a-4978-8cfa-6ff2dda64136)
+![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/179ff179-c52c-477f-b313-e339723e426d)
 
 Next, when creating a rule, it will retrieve a chunk from the tcache, obtain its pointer, and then free the buffer again. Since tcache operates in a LIFO (Last-in, First-out) manner, we gain control over the first chunk's `fd` and `bk` pointers:
 
-![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/e784ed13-9fe0-4199-8cbe-987cd222d33c)
+![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/fc39b79d-6bf1-41fe-8d44-d75c09b8089b)
 
 By editing the `fd` pointer of this chunk (due to the UAF), we can confirm that it points to `__free_hook`:
 
-![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/e36a0caa-b8b3-4028-9864-6af88711b2f9)
+![image](https://github.com/0xM4hm0ud/CTF-Writeups/assets/80924519/a62b6abe-91c1-4596-a959-ac6401c14a4c)
 
 Now, if we create 2 more notes, the second note will occupy the `__free_hook` address. 
 Upon editing the second note to point to `system`, we can observe the change:
